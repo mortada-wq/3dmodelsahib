@@ -1,0 +1,7 @@
+.git
+.github
+assets
+data_toolkit
+**/__pycache__
+**/*.pyc
+**/.DS_Store
