@@ -29,6 +29,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ninja-build \
     && rm -rf /var/lib/apt/lists/*
 
+# The base image ships a distutils-installed blinker that pip refuses to
+# upgrade; remove it so the dependency install is not blocked.
+RUN rm -rf /usr/lib/python3/dist-packages/blinker* || true
+
 RUN python -m pip install --upgrade pip setuptools wheel ninja packaging
 
 # TRELLIS.2 targets torch 2.6.0/cu124; the RunPod base image ships 2.4.0.
