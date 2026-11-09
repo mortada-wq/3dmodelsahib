@@ -63,9 +63,10 @@ RUN pip install --no-cache-dir \
         lpips \
         "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8"
 
-# flash-attn is the slow compile (20-40 min). Use --build-arg
-# ATTN_BACKEND=xformers on GPUs that cannot run it.
-ARG ATTN_BACKEND=flash
+# xformers ships as a prebuilt wheel and is the default: it keeps the image
+# build to tens of minutes instead of compiling flash-attn for an hour.
+# Use --build-arg ATTN_BACKEND=flash for a faster runtime on A6000/A40/H100.
+ARG ATTN_BACKEND=xformers
 RUN if [ "$ATTN_BACKEND" = "flash" ]; then \
         pip install --no-cache-dir flash-attn==2.7.3 --no-build-isolation; \
     else \

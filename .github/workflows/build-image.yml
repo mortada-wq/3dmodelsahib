@@ -1,0 +1,53 @@
+name: Build worker image
+
+# Builds the RunPod worker image here instead of in RunPod's GitHub builder,
+# so a repo-connection problem cannot block deployment. Manual trigger only.
+#
+# The image is pushed to GHCR; point the RunPod template at it:
+#   ghcr.io/mortada-wq/sahib-trellis3d:latest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+
+      # The CUDA base plus torch needs more space than a stock runner has.
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          tags: |
+            ghcr.io/mortada-wq/sahib-trellis3d:latest
+            ghcr.io/mortada-wq/sahib-trellis3d:${{ github.sha }}
+          build-args: |
+            ATTN_BACKEND=xformers
